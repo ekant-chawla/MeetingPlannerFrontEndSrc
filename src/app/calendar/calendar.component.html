@@ -1,0 +1,141 @@
+<!--Day Modal and its button-->
+<button hidden id='b' type="button" class="btn bg-purple" data-toggle="modal" data-target="#dayModal">
+</button>
+<!-- Modal -->
+<div class="modal fade" id="dayModal" tabindex="-1" role="dialog" aria-labelledby="dayModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-purple text-white">
+        <h5 *ngIf='clickedDate' class="modal-title" id="dayModalLabel">{{ clickedDate | calendarDate:('day' +
+          'ViewTitle'):'en' }}</h5>
+        <button id='dayClose' type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <mwl-calendar-day-view [viewDate]="clickedDate" [events]="eventList" (eventClicked)="eventClicked($event)">
+        </mwl-calendar-day-view>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button *ngIf='isAdmin' type="button" class="btn bg-purple" (click)="createMeeting()">Schedule Meeting</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<button hidden id='createButton' type="button" class="btn bg-purple" data-toggle="modal" data-target="#createMeetingModal">
+</button>
+<!-- Modal -->
+<div class="modal fade" id="createMeetingModal" tabindex="-1" role="dialog" aria-labelledby="createMeetingModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-purple text-white">
+        <h5 *ngIf='!isAdmin' class="modal-title" id="createMeetingModalLabel">Meeting Detail</h5>
+        <h5 *ngIf='isAdmin && forNew' class="modal-title" id="createMeetingModalLabel">Create Meeting</h5>
+        <h5 *ngIf='isAdmin && !forNew' class="modal-title" id="createMeetingModalLabel">Edit Meeting</h5>
+        <button id='createClose' type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="openDayWindow()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <form #createForm="ngForm" (ngSubmit)="saveMeeting()" ngNativeValidate>
+
+          <div class="form-group">
+            <label for="title">Title</label>
+            <input [disabled]='!isAdmin' required [(ngModel)]='title' name='title' #Etitle="ngModel" type="text" class="form-control"
+              id="title" placeholder="Enter Title">
+          </div>
+
+          <div class="form-group">
+            <label for="description">Purpose</label>
+            <input [disabled]='!isAdmin' required [(ngModel)]='description' name='description' #Edescription="ngModel"
+              type="text" class="form-control" id="description" placeholder="Enter Description">
+          </div>
+
+          <div class="form-group">
+            <label for="start">Start</label>
+            <input [disabled]='!isAdmin' required [min]='min' [max]='max' class="form-control" type="text" id="start"
+              [owlDateTimeTrigger]="dt1" [owlDateTime]="dt1" [(ngModel)]='start' name='start' #startDate='ngModel'>
+            <owl-date-time [pickerMode]="'dialog'" #dt1></owl-date-time>
+          </div>
+
+          <div class="form-group">
+            <label for="end">End</label>
+            <input [disabled]='!isAdmin' required [min]='min' [max]='max' class="form-control" type="text" id="end"
+              [owlDateTimeTrigger]="dt2" [owlDateTime]="dt2" [(ngModel)]='end' name='end' #endDate='ngModel'>
+            <owl-date-time [pickerMode]="'dialog'" #dt2></owl-date-time>
+          </div>
+
+          <div class="form-group">
+            <label for="location">Location</label>
+            <input [disabled]='!isAdmin' required [(ngModel)]='location' name='location' #Elocation="ngModel" type="text"
+              class="form-control" id="location" placeholder="Enter Location">
+          </div>
+
+
+          <div class="form-group">
+            <label for="importance">Importance</label>
+            <select required placeholder="Select Importance" [(ngModel)]='importance' name='importance' type="text"
+              class="form-control" id="importance">
+              <option [value]="importance.code" *ngFor='let importance of importanceOption'>{{importance.name}}</option>
+            </select>
+          </div>
+
+
+          <div *ngIf='!forNew && adminName' class="form-group">
+            <label for="adminName">Meeting Assigned By</label>
+            <input disabled required [(ngModel)]='adminName' name='adminName' type="text" class="form-control" id="adminName">
+          </div>
+
+          <div class="form-group text-right">
+            <input *ngIf='isAdmin' [disabled]="Etitle.invalid || Edescription.invalid || Elocation.invalid" type="submit"
+              value="Save" class="btn bg-purple mr-2">
+            <input *ngIf='!forNew' [hidden]='!isAdmin' type="button" value="Delete" class="btn btn-secondary" (click)="deleteMeeting()">
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="container my-3">
+  <div class="row text-center">
+    <div class="col-md-4">
+      <div class="btn-group">
+        <button [disabled]='viewDate.getMonth() == 0' class="btn bg-purple" mwlCalendarPreviousView [view]="view"
+          [(viewDate)]="viewDate" (viewDateChange)="getMeetings()">
+          Previous
+        </button>
+        <div class="btn btn-outline-secondary" mwlCalendarToday [(viewDate)]="viewDate" (viewDateChange)="getMeetings()">
+          Today
+        </div>
+        <button [disabled]='viewDate.getMonth() == 11' class="btn bg-purple" mwlCalendarNextView [view]="view"
+          [(viewDate)]="viewDate" (viewDateChange)="getMeetings()">
+          Next
+        </button>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <h2 class="calendar-month">{{ viewDate | calendarDate:(view + 'ViewTitle'):'en' }}</h2>
+    </div>
+    <!--Added clickedDate = null so that the day timeline view does not open when the create window opened by this button is closed-->
+    <div class="col-md-4">
+      <button *ngIf='isAdmin' type="button" class="btn bg-purple" (click)="clickedDate=null;createMeeting()">Schedule
+        Meeting</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <mwl-calendar-month-view (dayClicked)="dayClicked($event)" [viewDate]="viewDate" [events]="eventList">
+  </mwl-calendar-month-view>
+</div>

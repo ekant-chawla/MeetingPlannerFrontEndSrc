@@ -1,0 +1,18 @@
+<nav *ngIf='isLoggedIn()' class="navbar bg-purple fluid-container">
+  <div class="row w-100 no-gutters">
+
+    <div style="min-height: 48px" class="col-8 col-md-10 cursor-pointer">
+      <div *ngIf='isAdmin()' [routerLink]="['/admin']" class="brand">Meeting Calendar</div>
+      <div *ngIf='!isAdmin()' [routerLink]="['/calendar']" class="brand">Meeting Calendar</div>
+    </div>
+
+    <div class="col-2 col-md-1 text-right">
+      <img *ngIf='isAdmin()' [routerLink]="['/admin']" class="icon my-2 my-75" title="Users" src="assets/friend.svg">
+    </div>
+
+    <div class="col-2 col-md-1 text-right">
+      <img class="icon my-2 my-75" title="Logout" src="assets/logout.svg" (click)="logout()">
+    </div>
+
+  </div>
+</nav>
